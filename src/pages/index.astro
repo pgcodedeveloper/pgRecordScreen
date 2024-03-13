@@ -1,0 +1,142 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import ScreenShare from '../components/icons/ScreenShare.astro';
+import Volume from '../components/icons/Volume.astro';
+import Microphone from '../components/icons/Microphone.astro';
+import WebCam from '../components/icons/WebCam.astro';
+import Button from '../components/ui/Button.astro';
+import SectionBox from '../components/ui/SectionBox.astro';
+import ServicesCard from '../components/ui/ServicesCard.astro';
+import Divider from '../components/ui/Divider.astro';
+
+const SERVICES = {
+	basic: [
+		{
+			text: "Calidad HD"
+		},
+		{
+			text: "Grabar Pestañas del navegador"
+		},
+		{
+			text: "Grabar Ventanas completas"
+		}
+	],
+	normal: [
+		{
+			text: "Calidad HD"
+		},
+		{
+			text: "Grabar Pestañas del navegador"
+		},
+		{
+			text: "Grabar Ventanas completas"
+		},
+		{
+			text: "Grabar el audio"
+		}
+	],
+	full: [
+		{
+			text: "Calidad HD"
+		},
+		{
+			text: "Grabar con el audio"
+		},
+		{
+			text: "Grabar con la webcam"
+		}
+	]
+}
+---
+
+<Layout title="Grabar la Pantalla">
+	<main class="w-full sm:max-w-5xl h-full mx-auto py-10 px-5 sm:p-4 mb-20">
+		<Header />
+
+		<SectionBox>
+			<div class="flex flex-col items-center justify-center gap-4">
+				<h2 class="text-2xl font-semibold text-gray-700">Grabar pantalla y sonido</h2>
+				<p class="text-base text-gray-500">¡Totalmente gratis!</p>
+
+				<ServicesCard title='Incluye' price={0} services={SERVICES.basic}/>
+			</div>
+			<div class="flex flex-wrap sm:flex-col items-center justify-center gap-10">
+				<ScreenShare class="w-20 h-20 text-sky-600"/>
+				<Volume class="w-20 h-20 text-sky-600"/>
+				<Button id='btnRecordScreen' text='Comenzar grabación' class='bg-sky-600 rounded-md py-2 px-4 text-gray-100 disabled:text-gray-500 font-semibold transition hover:animate-squeeze animate-duration-150 hover:bg-sky-700 disabled:bg-sky-800 disabled:cursor-not-allowed'/>
+			</div>
+		</SectionBox>
+
+		<Divider />
+
+		<SectionBox>
+			<div class="flex flex-col items-center justify-center gap-4">
+				<h2 class="text-2xl font-semibold text-gray-700">Grabar pantalla y micrófono</h2>
+				<p class="text-base text-gray-500">¡Totalmente gratis!</p>
+
+				<ServicesCard title='Incluye' price={0} services={SERVICES.normal}/>
+			</div>
+			<div class="flex flex-wrap sm:flex-col items-center justify-center gap-10">
+				<ScreenShare class="w-20 h-20 text-sky-600"/>
+				<Microphone class="w-20 h-20 text-sky-600 "/>
+				<Button id='btnRecordScreenMicrophone' text='Comenzar grabación' class='bg-sky-600 rounded-md py-2 px-4 text-gray-100 disabled:text-gray-500 font-semibold transition hover:animate-squeeze animate-duration-150 hover:bg-sky-700 disabled:bg-sky-800 disabled:cursor-not-allowed'/>
+			</div>
+		</SectionBox>
+
+		<SectionBox>
+			<div class="flex flex-col items-center justify-center gap-4">
+				<h2 class="text-2xl font-semibold text-gray-700 text-wrap text-center">Grabar micrófono y cámara</h2>
+				<p class="text-base text-gray-500">¡Totalmente gratis!</p>
+
+				<ServicesCard title='Incluye' price={0} services={SERVICES.full}/>
+			</div>
+			<div id="contBtn" class="flex flex-wrap sm:flex-col items-center justify-center gap-10">
+				<Microphone class="w-20 h-20 text-sky-600 "/>
+				<WebCam class="w-20 h-20 text-sky-600 "/>
+				<div class="flex items-center flex-col justify-center gap-2">
+					<Button id='btnRecordScreenMicroCamera' text='Comenzar grabación' class='w-full bg-sky-600 rounded-md py-2 px-4 text-gray-100 disabled:text-gray-500 font-semibold transition hover:animate-squeeze animate-duration-150 hover:bg-sky-700 disabled:bg-sky-800 disabled:cursor-not-allowed'/>
+					<Button id='btnRecordScreenMicroCameraEnd' text='Parar grabación' disabled={true} class='w-full bg-sky-600 rounded-md py-2 px-4 text-gray-100 disabled:text-gray-500 font-semibold transition hover:animate-squeeze animate-duration-150 hover:bg-sky-700 disabled:bg-sky-800 disabled:cursor-not-allowed'/>
+				</div>
+			</div>
+		</SectionBox>
+	</main>
+</Layout>
+
+<script>
+	import { recordScreen, recordScreenMicrophone,recordScreenMicroCamera,endRecording } from '../../helpers';
+	
+	const $button: HTMLButtonElement | null = document.querySelector('#btnRecordScreen');
+	//Record the screen only
+	$button?.addEventListener('click',async () =>{
+		try {
+			await recordScreen($button);
+		} catch (error) {
+			console.log(error);
+		}
+	})
+
+	const $buttonMicrophone: HTMLButtonElement | null = document.querySelector('#btnRecordScreenMicrophone');
+	$buttonMicrophone?.addEventListener('click', async () =>{
+		try {
+			await recordScreenMicrophone($buttonMicrophone);
+		} catch (error) {
+			console.log(error);
+		}
+	})
+
+	const $buttonRecordMicroCamera: HTMLButtonElement | null = document.querySelector('#btnRecordScreenMicroCamera');
+	const $buttonRecordMicroCameraEnd: HTMLButtonElement | null = document.querySelector('#btnRecordScreenMicroCameraEnd');
+
+	let $record:MediaRecorder;
+	$buttonRecordMicroCamera?.addEventListener('click',async () =>{
+		if($buttonRecordMicroCameraEnd) $buttonRecordMicroCameraEnd.disabled = false;
+		const data = await recordScreenMicroCamera($buttonRecordMicroCamera);
+		$record = data;
+	});
+
+	$buttonRecordMicroCameraEnd?.addEventListener('click',() =>{
+		if($buttonRecordMicroCamera) $buttonRecordMicroCamera.disabled = false;
+		endRecording($buttonRecordMicroCameraEnd,$record);
+	})
+</script>
